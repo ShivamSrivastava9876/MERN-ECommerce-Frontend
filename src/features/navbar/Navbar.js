@@ -7,12 +7,12 @@ import { selectItems } from '../cart/cartSlice';
 import { selectUserInfo } from '../user/userSlice';
 
 const navigation = [
-    { name: 'Products', link: '/', user: true },
+    { name: 'Products', link: '/', user: true, admin: true },
     { name: 'Edit products', link: '/admin', admin: true },
     { name: 'Orders', link: '/admin/orders', admin: true },
 ]
 const userNavigation = [
-    { name: 'Your Profile', link: '/profile', user: true },
+    { name: 'My Profile', link: '/profile', user: true, admin: true },
     { name: 'My Orders', link: '/my-orders', user: true },
     { name: 'Sign out', link: '/logout', user: true, admin: true },
 
@@ -33,7 +33,7 @@ function NavBar({ children }) {
                 <Disclosure as="nav" className="bg-gray-800">
                     {({ open }) => (
                         <>
-                            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                            <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
                                 <div className="flex h-16 items-center justify-between">
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0">
@@ -138,24 +138,24 @@ function NavBar({ children }) {
                             </div>
 
                             <Disclosure.Panel className="md:hidden">
-                                {/* <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+                                <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
                                     {navigation.map((item) => (
 
-                                        <Disclosure.Button
-                                            key="Products"
+                                        item[userInfo.role] && <Disclosure.Button
+                                            key={item.name}
                                             as="a"
-                                            href="#"
+                                            href={item.link}
                                             className={classNames(
                                                 item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
                                                 'block rounded-md px-3 py-2 text-base font-medium'
                                             )}
                                             // aria-current={item.current ? 'page' : undefined}
                                         >
-                                            Product
+                                            {item.name}
                                         </Disclosure.Button>
 
                                     ))}
-                                </div> */}
+                                </div>
                                 <div className="border-t border-gray-700 pb-3 pt-4">
                                     <div className="flex items-center px-5">
                                         <div className="flex-shrink-0">
@@ -166,6 +166,7 @@ function NavBar({ children }) {
                                             <div className="text-sm font-medium leading-none text-gray-400">{userInfo.email}</div>
                                         </div>
                                         <Link to="/cart">
+                                            {items.length}
                                             {userInfo.role === 'user' && <button
                                                 type="button"
                                                 className="ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
@@ -179,10 +180,10 @@ function NavBar({ children }) {
                                     </div>
                                     <div className="mt-3 space-y-1 px-2">
                                         {userNavigation.map((item) => (
-                                            <Disclosure.Button
+                                            item[userInfo.role] && <Disclosure.Button
                                                 key={item.name}
                                                 as="a"
-                                                href={item.href}
+                                                href={item.link}
                                                 className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                                             >
                                                 {item.name}

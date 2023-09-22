@@ -1,7 +1,7 @@
 
 export function fetchProductById(id) {
   return new Promise(async (resolve) => {
-    const response = await fetch('/products/'+id)
+    const response = await fetch('/products/' + id)
     const data = await response.json()
     resolve({ data })
   });
@@ -13,8 +13,7 @@ export function fetchProductsByFilters(filter, sort, pagination, admin) {
   for (let key in filter) {
     const categoryValues = filter[key];
     if (categoryValues.length) {
-      const lastCategoryValue = categoryValues[categoryValues.length - 1]
-      queryString += `${key}=${lastCategoryValue}&`
+      queryString += `${key}=${categoryValues}&`
     }
   }
   for (let key in sort) {
@@ -58,10 +57,10 @@ export function fetchBrands() {
 
 export function createProduct(product) {
   return new Promise(async (resolve) => {
-    const response = await fetch('/products',{
+    const response = await fetch('/products', {
       method: 'POST',
       body: JSON.stringify(product),
-      headers: {'content-type':'application/json'}
+      headers: { 'content-type': 'application/json' }
     })
     const data = await response.json()
     resolve({ data })

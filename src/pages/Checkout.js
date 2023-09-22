@@ -4,12 +4,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectItems, updateCartAsync, deleteItemFromCartAsync } from '../features/cart/cartSlice';
 import { useForm } from 'react-hook-form';
 import { updateUserAsync } from '../features/user/userSlice';
-import { createOrderAsync, selectCurrentOrder } from '../features/order/orderSlice';
+import { createOrderAsync, selectCurrentOrder, selectStatus } from '../features/order/orderSlice';
 import { selectUserInfo } from '../features/user/userSlice';
-import { discountedPrice } from '../app/constants';
+import { Grid } from 'react-loader-spinner';
+import { useAlert } from 'react-alert';
+import Modal from '../features/common/Modal';
 
 function Checkout() {
     const dispatch = useDispatch();
+    const alert = useAlert();
     const {
         register,
         handleSubmit,
@@ -19,13 +22,14 @@ function Checkout() {
 
     const user = useSelector(selectUserInfo);
     const currentOrder = useSelector(selectCurrentOrder);
-
+    const status = useSelector(selectStatus);
     const items = useSelector(selectItems);
-    const totalAmount = items.reduce((amount, item) => discountedPrice(item.product) * item.quantity + amount, 0);
+    const totalAmount = items.reduce((amount, item) => item.product.discountPrice * item.quantity + amount, 0);
     const totalItems = items.reduce((total, item) => item.quantity + total, 0);
 
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState(null);
+    const [openModal, setOpenModal] = useState(null);
 
     const handleQuantity = (e, item) => {
         dispatch(updateCartAsync({ id: item.id, quantity: +e.target.value }))
@@ -37,7 +41,6 @@ function Checkout() {
     }
 
     const handleAddress = (e) => {
-        console.log(user.addresses[e.target.value])
         setSelectedAddress(user.addresses[e.target.value])
     }
 
@@ -45,16 +48,38 @@ function Checkout() {
         setPaymentMethod(e.target.value);
     }
     const handleOrder = (e) => {
-        const order = { items, totalAmount, totalItems, user: user.id, paymentMethod, selectedAddress, status: 'pending' }
-        dispatch(createOrderAsync(order));
+        if (selectedAddress && paymentMethod) {
+            const order = { items, totalAmount, totalItems, user: user.id, paymentMethod, selectedAddress, status: 'pending' }
+            dispatch(createOrderAsync(order));
+        }
+        else if (!selectedAddress && paymentMethod) {
+            alert.error('Select address')
+        }
+        else if (selectedAddress && !paymentMethod) {
+            alert.error('Select payment method')
+        }
+        else {
+            alert.error('Select address and payment method')
+        }
     }
 
     return (
         <>
             {!items.length && <Navigate to="/" replace={true}></Navigate>}
-            {currentOrder && currentOrder.paymentMethod == 'cash' && <Navigate to={`/order-success/${currentOrder.id}`} replace={true}></Navigate>}
-            {currentOrder && currentOrder.paymentMethod == 'card' && <Navigate to={`/stripe-checkout`} replace={true}></Navigate>}
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {currentOrder && currentOrder.paymentMethod === 'cash' && <Navigate to={`/order-success/${currentOrder.id}`} replace={true}></Navigate>}
+            {currentOrder && currentOrder.paymentMethod === 'card' && <Navigate to={`/stripe-checkout`} replace={true}></Navigate>}
+            {status === 'loading' ? (
+                <Grid
+                    height="80"
+                    width="80"
+                    color="rgb(79, 70, 229) "
+                    ariaLabel="grid-loading"
+                    radius="12.5"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                    visible={true}
+                />
+            ) : <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-5">
                     <div className="lg:col-span-3">
                         <form
@@ -70,7 +95,7 @@ function Checkout() {
                             <div className="space-y-12">
                                 <div className="border-b border-gray-900/10 pb-12">
                                     <h2 className="text-2xl font-semibold leading-7 text-gray-900">Personal Information</h2>
-                                    <p className="mt-1 text-sm leading-6 text-gray-600">Use a permanent address where you can receive mail.</p>
+                                    <p className="mt-1 text-sm leading-6 text-gray-600">Use a permanent postal address where you can receive product and valid email address to receive order confirmation mail</p>
 
                                     <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                                         <div className="sm:col-span-3">
@@ -191,7 +216,7 @@ function Checkout() {
                                     <p className="mt-1 text-sm leading-6 text-gray-600">
                                         Choose from existing addresses
                                     </p>
-                                    <ul role="list">
+                                    <ul>
                                         {user.addresses.map((address, index) => (
                                             <li
                                                 key={index}
@@ -284,7 +309,7 @@ function Checkout() {
                                                             <h3>
                                                                 <a href={item.product.id}>{item.product.title}</a>
                                                             </h3>
-                                                            <p className="ml-4">${discountedPrice(item.product)}</p>
+                                                            <p className="ml-4">${item.product.discountPrice}</p>
                                                         </div>
                                                         <p className="mt-1 text-sm text-gray-500">{item.product.brand}</p>
                                                     </div>
@@ -303,13 +328,24 @@ function Checkout() {
                                                         </div>
 
                                                         <div className="flex">
-                                                            <button
-                                                                onClick={e => handleRemove(e, item.id)}
-                                                                type="button"
-                                                                className="font-medium text-indigo-600 hover:text-indigo-500"
-                                                            >
-                                                                Remove
-                                                            </button>
+                                                            <div className="flex">
+                                                                <Modal
+                                                                    title={`Delete ${item.product.title}`}
+                                                                    message="Are you sure you want to delete this cart item ?"
+                                                                    dangerOption="Delete"
+                                                                    cancelOption="Cancel"
+                                                                    dangerAction={(e) => handleRemove(e, item.id)}
+                                                                    cancelAction={() => setOpenModal(null)}
+                                                                    showModal={openModal === item.id}
+                                                                ></Modal>
+                                                                <button
+                                                                    onClick={e => { setOpenModal(item.id) }}
+                                                                    type="button"
+                                                                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                                                                >
+                                                                    Remove
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -355,7 +391,7 @@ function Checkout() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>}
         </>
     )
 }

@@ -5,24 +5,25 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom';
 import { selectItems, updateCartAsync, deleteItemFromCartAsync, selectCartStatus, selectCartLoaded } from './cartSlice';
 import { Navigate } from 'react-router-dom';
-import { discountedPrice } from '../../app/constants';
 import { Grid } from 'react-loader-spinner';
 import Modal from '../common/Modal';
+import { useAlert } from 'react-alert';
 
 export default function Cart() {
   const dispatch = useDispatch();
+  const alert = useAlert();
 
   const items = useSelector(selectItems);
-  const totalAmount = items.reduce((amount, item) => discountedPrice(item.product) * item.quantity + amount, 0);
+  const totalAmount = items.reduce((amount, item) => item.product.discountPrice * item.quantity + amount, 0);
   const totalItems = items.reduce((total, item) => item.quantity + total, 0);
 
   const status = useSelector(selectCartStatus);
-  const cartLoaded = useSelector(selectCartLoaded)
+  const cartLoaded = useSelector(selectCartLoaded);
   const [openModal, setOpenModal] = useState(null);
 
 
   const handleQuantity = (e, item) => {
-    dispatch(updateCartAsync({ id:item.id, quantity: +e.target.value }))
+    dispatch(updateCartAsync({ id: item.id, quantity: +e.target.value }))
     //added "+" sign to convert string into integer because the value which will come will be in string
   }
 
@@ -32,13 +33,14 @@ export default function Cart() {
 
   return (
     <>
-      {!items.length && cartLoaded && <Navigate to="/" replace={true}></Navigate>}
+
       <div>
         <div className="mx-auto mt-12 bg-white max-w-7xl px-4 sm:px-6 lg:px-8">
 
           <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
             <h1 className="text-4xl my-5 font-bold tracking-tight text-gray-900">Cart</h1>
             <div className="flow-root">
+              {!items.length && cartLoaded && <h3>Cart is currently empty</h3>}
               {status === 'loading' ? (
                 <Grid
                   height="80"
@@ -68,7 +70,7 @@ export default function Cart() {
                           <h3>
                             <a href={item.product.id}>{item.product.title}</a>
                           </h3>
-                          <p className="ml-4">${discountedPrice(item.product)}</p>
+                          <p className="ml-4">${item.product.discountPrice}</p>
                         </div>
                         <p className="mt-1 text-sm text-gray-500">{item.product.brand}</p>
                       </div>
@@ -121,17 +123,17 @@ export default function Cart() {
               <p>Total items in cart</p>
               <p>{totalItems} items</p>
             </div>
-            <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
-            <div className="mt-6">
+            <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout</p>
+            {items.length && cartLoaded && <div className="mt-6">
               <Link to="/checkout"
                 className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
               >
                 Checkout
               </Link>
-            </div>
+            </div>}
             <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
               <p>
-                or
+                or{' '}
                 <Link to="/">
                   <button
                     type="button"

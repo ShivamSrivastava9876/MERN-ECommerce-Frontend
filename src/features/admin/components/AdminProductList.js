@@ -8,12 +8,12 @@ import { ChevronDownIcon, FunnelIcon, MinusIcon, PlusIcon, Squares2X2Icon } from
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from '@heroicons/react/20/solid'
 import { fetchProductsByFiltersAsync, selectAllProducts, selectTotalItems, fetchBrandsAsync, fetchCategoriesAsync, selectBrands, selectCategories } from '../../product-list/productSlice';
 
-import { ITEMS_PER_PAGE, discountedPrice } from '../../../app/constants';
+import { ITEMS_PER_PAGE } from '../../../app/constants';
 
 const sortOptions = [
   { name: 'Best Rating', sort: 'rating', order: 'desc', current: false },
-  { name: 'Price: Low to High', sort: 'price', order: 'asc', current: false },
-  { name: 'Price: High to Low', sort: 'price', order: 'desc', current: false },
+  { name: 'Price: Low to High', sort: 'discountPrice', order: 'asc', current: false },
+  { name: 'Price: High to Low', sort: 'discountPrice', order: 'desc', current: false },
 ]
 
 function classNames(...classes) {
@@ -77,7 +77,7 @@ export default function AdminProductList() {
 
   useEffect(() => {
     const pagination = { _page: page, _limit: ITEMS_PER_PAGE };
-    dispatch(fetchProductsByFiltersAsync({ filter, sort, pagination, admin:true }));
+    dispatch(fetchProductsByFiltersAsync({ filter, sort, pagination, admin: true }));
   }, [dispatch, filter, sort, page])
 
   useEffect(() => {
@@ -95,12 +95,12 @@ export default function AdminProductList() {
 
         <div className="bg-white">
           <div>
-            <MobileFilter mobileFiltersOpen={mobileFiltersOpen} setmobileFiltersOpen={setMobileFiltersOpen} handleFilter={handleFilter} filters={filters}></MobileFilter>
+            <MobileFilter mobileFiltersOpen={mobileFiltersOpen} setMobileFiltersOpen={setMobileFiltersOpen} handleFilter={handleFilter} filters={filters}></MobileFilter>
 
 
             <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex items-baseline justify-between border-b border-gray-200 pb-6 pt-24">
-                <h1 className="text-4xl font-bold tracking-tight text-gray-900">All Products</h1>
+                <h1 className="text-4xl font-bold tracking-tight text-gray-900">Product List</h1>
 
                 <div className="flex items-center">
                   <Menu as="div" className="relative inline-block text-left">
@@ -146,10 +146,10 @@ export default function AdminProductList() {
                     </Transition>
                   </Menu>
 
-                  <button type="button" className="-m-2 ml-5 p-2 text-gray-400 hover:text-gray-500 sm:ml-7">
+                  {/* <button type="button" className="-m-2 ml-5 p-2 text-gray-400 hover:text-gray-500 sm:ml-7">
                     <span className="sr-only">View grid</span>
                     <Squares2X2Icon className="h-5 w-5" aria-hidden="true" />
-                  </button>
+                  </button> */}
                   <button
                     type="button"
                     className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
@@ -192,10 +192,22 @@ export default function AdminProductList() {
   );
 }
 
-function MobileFilter({ mobileFiltersOpen, setMobileFiltersOpen, handleFilter, filters }) {
+function MobileFilter({
+  mobileFiltersOpen,
+  setMobileFiltersOpen,
+  handleFilter,
+  filters,
+}) {
+  function handleClose() {
+    setMobileFiltersOpen(false);
+  }
   return (
     <Transition.Root show={mobileFiltersOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-40 lg:hidden" onClose={setMobileFiltersOpen}>
+      <Dialog
+        as="div"
+        className="relative z-40 lg:hidden"
+        onClose={handleClose}
+      >
         <Transition.Child
           as={Fragment}
           enter="transition-opacity ease-linear duration-300"
@@ -233,19 +245,30 @@ function MobileFilter({ mobileFiltersOpen, setMobileFiltersOpen, handleFilter, f
 
               {/* Filters */}
               <form className="mt-4 border-t border-gray-200">
-
                 {filters.map((section) => (
-                  <Disclosure as="div" key={section.id} className="border-t border-gray-200 px-4 py-6">
+                  <Disclosure
+                    as="div"
+                    key={section.id}
+                    className="border-t border-gray-200 px-4 py-6"
+                  >
                     {({ open }) => (
                       <>
                         <h3 className="-mx-2 -my-3 flow-root">
                           <Disclosure.Button className="flex w-full items-center justify-between bg-white px-2 py-3 text-gray-400 hover:text-gray-500">
-                            <span className="font-medium text-gray-900">{section.name}</span>
+                            <span className="font-medium text-gray-900">
+                              {section.name}
+                            </span>
                             <span className="ml-6 flex items-center">
                               {open ? (
-                                <MinusIcon className="h-5 w-5" aria-hidden="true" />
+                                <MinusIcon
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                />
                               ) : (
-                                <PlusIcon className="h-5 w-5" aria-hidden="true" />
+                                <PlusIcon
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                />
                               )}
                             </span>
                           </Disclosure.Button>
@@ -253,13 +276,19 @@ function MobileFilter({ mobileFiltersOpen, setMobileFiltersOpen, handleFilter, f
                         <Disclosure.Panel className="pt-6">
                           <div className="space-y-6">
                             {section.options.map((option, optionIdx) => (
-                              <div key={option.value} className="flex items-center">
+                              <div
+                                key={option.value}
+                                className="flex items-center"
+                              >
                                 <input
                                   id={`filter-mobile-${section.id}-${optionIdx}`}
                                   name={`${section.id}[]`}
                                   defaultValue={option.value}
                                   type="checkbox"
                                   defaultChecked={option.checked}
+                                  onChange={(e) =>
+                                    handleFilter(e, section, option)
+                                  }
                                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 <label
@@ -434,7 +463,7 @@ function ProductGrid({ products }) {
                     </div>
                     <div>
                       <p className="text-sm block font-medium text-gray-900">
-                        ${discountedPrice(product)}
+                        ${product.discountPrice}
                       </p>
                       <p className="text-sm block line-through font-medium text-gray-400">
                         ${product.price}
