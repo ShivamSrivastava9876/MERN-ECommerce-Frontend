@@ -136,6 +136,7 @@ export default function Signup() {
                             Log in
                         </Link>
                     </p>
+                    <p className="mt-6 text-base leading-7 text-blue-600">To login as an admin use Email Address: admin@gmail.com and password: Admin123</p>
                 </div>
             </div>
         </>

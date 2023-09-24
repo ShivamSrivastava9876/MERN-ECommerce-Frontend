@@ -51,7 +51,9 @@ export default function ProductList() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const handleFilter = (e, section, option) => {
+    
     const newFilter = { ...filter };
+    console.log(e.target);
     if (e.target.checked) {
       if (newFilter[section.id]) {
         newFilter[section.id].push(option.value)
@@ -252,6 +254,7 @@ function MobileFilter({ mobileFiltersOpen, setMobileFiltersOpen, handleFilter, f
                         <Disclosure.Panel className="pt-6">
                           <div className="space-y-6">
                             {section.options.map((option, optionIdx) => (
+                              
                               <div key={option.value} className="flex items-center">
                                 <input
                                   id={`filter-mobile-${section.id}-${optionIdx}`}

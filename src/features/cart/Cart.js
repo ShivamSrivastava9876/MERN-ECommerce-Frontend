@@ -33,14 +33,14 @@ export default function Cart() {
 
   return (
     <>
-
+      
       <div>
         <div className="mx-auto mt-12 bg-white max-w-7xl px-4 sm:px-6 lg:px-8">
 
           <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
             <h1 className="text-4xl my-5 font-bold tracking-tight text-gray-900">Cart</h1>
             <div className="flow-root">
-              {!items.length && cartLoaded && <h3>Cart is currently empty</h3>}
+            {!items.length && cartLoaded && <h3>Cart is currently empty</h3>}
               {status === 'loading' ? (
                 <Grid
                   height="80"
@@ -113,7 +113,7 @@ export default function Cart() {
               </ul>
             </div>
           </div>
-
+          
           <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
             <div className="flex justify-between my-2 text-base font-medium text-gray-900">
               <p>Subtotal</p>
@@ -121,16 +121,16 @@ export default function Cart() {
             </div>
             <div className="flex justify-between my-2 text-base font-medium text-gray-900">
               <p>Total items in cart</p>
-              <p>{totalItems} items</p>
+              <p>{totalItems}</p>
             </div>
             <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout</p>
-            {items.length && cartLoaded && <div className="mt-6">
+            <div className="mt-6">
               <Link to="/checkout"
                 className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
               >
                 Checkout
               </Link>
-            </div>}
+            </div>
             <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
               <p>
                 or{' '}

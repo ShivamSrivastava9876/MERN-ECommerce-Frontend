@@ -217,7 +217,7 @@ function Checkout() {
                                         Choose from existing addresses
                                     </p>
                                     <ul>
-                                        {user.addresses.map((address, index) => (
+                                        {user && user.addresses.map((address, index) => (
                                             <li
                                                 key={index}
                                                 className="flex justify-between gap-x-6 px-3 py-5 border-solid border-2 border-gray">
@@ -364,7 +364,8 @@ function Checkout() {
                                     <p>Total items in cart</p>
                                     <p>{totalItems} items</p>
                                 </div>
-                                <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
+                                <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout</p>
+                                <p className="mt-0.5 text-sm text-blue-500">To pay through card user can use card number: 4242 4242 4242 4242</p>
                                 <div className="mt-6">
                                     <div
                                         onClick={handleOrder}
@@ -375,7 +376,7 @@ function Checkout() {
                                 </div>
                                 <div className="mt-6 flex justify-center text-center text-sm text-gray-500">
                                     <p>
-                                        or
+                                        or{' '}
                                         <Link to="/">
                                             <button
                                                 type="button"
